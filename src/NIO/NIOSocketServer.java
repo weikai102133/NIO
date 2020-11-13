@@ -68,11 +68,10 @@ public class NIOSocketServer extends Thread {
             BufferManager manager = (BufferManager)selectionKey.attachment();
             ByteBuffer buffer = manager.writeBuffer;
             buffer.flip();
-            //System.out.println(buffer.position());
             socketChannel.write(buffer);
             if(!buffer.hasRemaining()){
                 System.out.println("server写完");
-                manager.setReadBuffer(ByteBuffer.allocate(1024));
+                manager.setReadBuffer(ByteBuffer.allocate(1024).put(manager.readBuffer));
                 manager.setWriteBuffer(ByteBuffer.allocate(1024));
                 manager.setCacheBuffer(ByteBuffer.allocate(1024));
                 selectionKey.attach(manager);
@@ -103,6 +102,7 @@ public class NIOSocketServer extends Thread {
             }
             channel.read(manager.readBuffer);
             manager.readBuffer.flip();
+            //解决半包粘包
             while (manager.readBuffer.hasRemaining()){
                 if (bodyLen == -1){
                     if(manager.readBuffer.remaining() >= head_length){
@@ -164,22 +164,12 @@ public class NIOSocketServer extends Thread {
                 }
             }
             selectionKey.interestOps(selectionKey.interestOps() | SelectionKey.OP_READ);
-        } catch (IOException e) {
+        } catch (Exception e) {
             try {
                 serverSocketChannel.close();
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -191,8 +181,8 @@ public class NIOSocketServer extends Thread {
         Class[] parameterTypes = (Class[]) list.get(2);
         Object[] args = (Object[])list.get(3);
         Method method = clazz.getMethod(methodName,parameterTypes);
-        Object oo = method.invoke(clazz.newInstance(),args);
-        return  oo;
+        Object o = method.invoke(clazz.newInstance(),args);
+        return  o;
     }
 
     public static byte[] getBytesFromObject(Serializable obj) throws Exception {

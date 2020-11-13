@@ -19,7 +19,7 @@ public class Stub extends Thread{
     private volatile SocketChannel socketChannel;
     private volatile Selector selector;
     private final ByteBuffer cacheBuffer = ByteBuffer.allocate(1024);
-    ByteBuffer byteBuffer = ByteBuffer.allocate(100);
+    private ByteBuffer byteBuffer = ByteBuffer.allocate(100);
     volatile boolean cache = false;
     volatile boolean write = false;
     volatile boolean resultSuccess = false;
@@ -67,9 +67,7 @@ public class Stub extends Thread{
 
     public void init() throws IOException {
         synchronized (selector) {
-            synchronized (selector){
-                socketChannel.register(selector, SelectionKey.OP_CONNECT);
-            }
+            socketChannel.register(selector, SelectionKey.OP_CONNECT);
         }
     }
 
@@ -110,7 +108,7 @@ public class Stub extends Thread{
 
     private void read(SelectionKey selectionKey) throws IOException {
         System.out.println("客户端监听到read事件");
-        int head_lenth = 4;
+        int head_length = 4;
         byte[] headBytes = new byte[4];
 
         SocketChannel socketChannel = (SocketChannel)selectionKey.channel();
@@ -126,7 +124,7 @@ public class Stub extends Thread{
         byteBuffer.flip();
         while (byteBuffer.hasRemaining()){
             if (bodyLen == -1){
-                if (byteBuffer.remaining() >= head_lenth){
+                if (byteBuffer.remaining() >= head_length){
                     byteBuffer.mark();
                     byteBuffer.get(headBytes);
                     bodyLen = byteArraytToInt(headBytes);
@@ -161,11 +159,7 @@ public class Stub extends Thread{
             }
 
         }
-        //System.out.println("read结束");
-        if(connect){
-            selectionKey.interestOps(SelectionKey.OP_READ);
-        }
-
+        selectionKey.interestOps(SelectionKey.OP_READ);
     }
 
     private void send(SelectionKey selectionKey) throws Exception {
@@ -173,15 +167,9 @@ public class Stub extends Thread{
         SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
         socketChannel.configureBlocking(false);
         byte[] bytes = getBytesFromObject(list);
-        Object res = deserialize(bytes);
-        ArrayList<Object> list1 = (ArrayList<Object>)res;
-        //System.out.println(list1.get(1));
-        //System.out.println(bytes.length);
         int head = bytes.length;
         ByteBuffer byteBuffer = ByteBuffer.allocate(4+head);
-        byte[] bytes1 = intToBytes(head);
         byteBuffer.put(intToBytes(head));
-        //System.out.println(intToBytes(head));
         byteBuffer.put(bytes);
         byteBuffer.flip();
         while (byteBuffer.hasRemaining()){
