@@ -12,6 +12,7 @@ import java.nio.channels.SocketChannel;
 public class Client {
     private static Selector selector;
     private static SocketChannel socketChannel;
+
     public static void main(String[] args) throws IOException {
         selector = Selector.open();
         socketChannel = SocketChannel.open();

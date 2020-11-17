@@ -36,7 +36,6 @@ public class Stub extends Thread{
     }
 
     public  Object getStub(Class clazz,Class impl) {
-
         InvocationHandler h = new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
